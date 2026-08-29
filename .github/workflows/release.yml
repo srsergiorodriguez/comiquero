@@ -46,19 +46,33 @@ jobs:
       - name: Build Application
         run: bun run build:stable 
 
-      - name: Install rcedit (Windows)
+      # FIX: Download the standalone rcedit executable directly to bypass npm global path issues on Windows
+      - name: Download rcedit (Windows)
         if: runner.os == 'Windows'
-        run: npm install -g rcedit
+        shell: pwsh
+        run: |
+          Invoke-WebRequest -Uri https://github.com/electron/rcedit/releases/download/v2.0.0/rcedit-x64.exe -OutFile rcedit.exe
 
+      # FIX: Point directly to the downloaded rcedit.exe
       - name: Inject Icon (Windows)
         if: runner.os == 'Windows'
+        shell: pwsh
         run: |
-          rcedit "build\stable-win-x64\comiquero\launcher.exe" --set-icon "assets\icon.ico"
-          rcedit "build\stable-win-x64\comiquero\bun.exe" --set-icon "assets\icon.ico"
+          .\rcedit.exe "build\stable-win-x64\comiquero\launcher.exe" --set-icon "assets\icon.ico"
+          .\rcedit.exe "build\stable-win-x64\comiquero\bun.exe" --set-icon "assets\icon.ico"
 
       - name: Ad-Hoc Sign macOS Binary
         if: runner.os == 'macOS'
         run: find build -name "*.app" -exec codesign --force --deep -s - {} \;
+
+      # FIX: Zip the Mac bundle natively to lock in the executable permissions
+      - name: Zip macOS Build
+        if: runner.os == 'macOS'
+        run: |
+          cd build/stable-mac-arm64
+          zip -yr comiquero-Mac-Silicon.zip comiquero.app
+          cd ../stable-mac-x64
+          zip -yr comiquero-Mac-Intel.zip comiquero.app
 
       - name: Zip Windows Build
         if: runner.os == 'Windows'
