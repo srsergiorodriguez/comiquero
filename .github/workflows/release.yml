@@ -21,7 +21,7 @@ jobs:
             runner: ubuntu-latest
             artifact-name: comiquero-linux
           - os-name: Mac-Intel
-            runner: macos-13
+            runner: macos-15-intel
             artifact-name: comiquero-mac-intel
           - os-name: Mac-Silicon
             runner: macos-latest
@@ -46,14 +46,12 @@ jobs:
       - name: Build Application
         run: bun run build:stable 
 
-      # FIX: Download the standalone rcedit executable directly to bypass npm global path issues on Windows
       - name: Download rcedit (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
           Invoke-WebRequest -Uri https://github.com/electron/rcedit/releases/download/v2.0.0/rcedit-x64.exe -OutFile rcedit.exe
 
-      # FIX: Point directly to the downloaded rcedit.exe
       - name: Inject Icon (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
@@ -65,14 +63,16 @@ jobs:
         if: runner.os == 'macOS'
         run: find build -name "*.app" -exec codesign --force --deep -s - {} \;
 
-      # FIX: Zip the Mac bundle natively to lock in the executable permissions
       - name: Zip macOS Build
         if: runner.os == 'macOS'
         run: |
-          cd build/stable-mac-arm64
-          zip -yr comiquero-Mac-Silicon.zip comiquero.app
-          cd ../stable-mac-x64
-          zip -yr comiquero-Mac-Intel.zip comiquero.app
+          if [ -d "build/stable-mac-arm64" ]; then
+            cd build/stable-mac-arm64
+            zip -yr comiquero-Mac-Silicon.zip comiquero.app
+          elif [ -d "build/stable-mac-x64" ]; then
+            cd build/stable-mac-x64
+            zip -yr comiquero-Mac-Intel.zip comiquero.app
+          fi
 
       - name: Zip Windows Build
         if: runner.os == 'Windows'
