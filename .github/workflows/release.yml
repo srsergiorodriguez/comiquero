@@ -1,0 +1,88 @@
+name: Cross-Compile & Release
+
+on:
+  workflow_dispatch: 
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    name: Build on ${{ matrix.os-name }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false 
+      matrix:
+        include:
+          - os-name: Windows
+            runner: windows-latest
+            artifact-name: comiquero-windows
+          - os-name: Linux
+            runner: ubuntu-latest
+            artifact-name: comiquero-linux
+          - os-name: Mac-Intel
+            runner: macos-13
+            artifact-name: comiquero-mac-intel
+          - os-name: Mac-Silicon
+            runner: macos-latest
+            artifact-name: comiquero-mac-silicon
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v2 
+        with:
+          bun-version: latest
+
+      - name: Install Linux Dependencies
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y build-essential pkg-config libwebkit2gtk-4.1-dev
+
+      - name: Install Dependencies
+        run: bun install
+
+      - name: Build Application
+        run: bun run build:stable 
+
+      - name: Install rcedit (Windows)
+        if: runner.os == 'Windows'
+        run: npm install -g rcedit
+
+      - name: Inject Icon (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          rcedit "build\stable-win-x64\comiquero\launcher.exe" --set-icon "assets\icon.ico"
+          rcedit "build\stable-win-x64\comiquero\bun.exe" --set-icon "assets\icon.ico"
+
+      - name: Ad-Hoc Sign macOS Binary
+        if: runner.os == 'macOS'
+        run: find build -name "*.app" -exec codesign --force --deep -s - {} \;
+
+      - name: Zip Windows Build
+        if: runner.os == 'Windows'
+        run: Compress-Archive -Path build\stable-win-x64\comiquero\* -DestinationPath build\comiquero-Windows.zip
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact-name }}
+          path: build/ 
+
+  release:
+    name: Create GitHub Release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v') 
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Publish Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/**/*
+          generate_release_notes: true
