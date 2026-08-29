@@ -1,0 +1,221 @@
+/* src/mainview/global.css */
+
+/* 1. Variable Font Integration */
+@font-face {
+  font-family: 'Geist Mono';
+  src: url('./assets/fonts/GeistMono-VariableFont_wght.ttf') format('truetype');
+  font-weight: 100 900; 
+  font-style: normal;
+}
+
+:root {
+  /* Core variables */
+  --bg-color: #fafafa;         /* Off-white background */
+  --fg-color: #334155;         /* Soft slate gray instead of harsh black */
+  --border-color: #cbd5e1;     /* Subtle gray for panels and dividers */
+  --border-width: 1px;         /* Thinner, cleaner lines */
+  --border-radius: 6px;        /* Rounder, softer corners */
+  
+  --spacing-sm: 4px;
+  --spacing-md: 8px;
+  --spacing-lg: 16px;
+  --font-family: 'Geist Mono', monospace;
+  
+  /* Micro-typography weights */
+  --fw-light: 300;
+  --fw-regular: 400;
+  --fw-medium: 550; 
+  --fw-bold: 750;
+
+  /* Typography sizing */
+  --fs-sm: 12px;
+  --fs-base: 14px;
+  --fs-md: 16px;
+  --fs-lg: 18px;
+  --fs-xl: 22px;
+}
+
+/* Base Reset */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--fg-color);
+  font-family: var(--font-family);
+  font-weight: var(--fw-regular);
+  font-size: var(--fs-base);
+  height: 100vh;
+  overflow: hidden;
+  
+  /* Prevent text selection globally to make it feel like a native app */
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Typography */
+h1 {
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-bold);
+  margin-bottom: var(--spacing-sm);
+}
+
+h2 {
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-bold);
+  margin-bottom: var(--spacing-sm);
+}
+
+h3 {
+  font-size: var(--fs-md);
+  font-weight: var(--fw-bold);
+  margin-bottom: var(--spacing-sm);
+}
+
+p {
+  font-size: var(--fs-base);
+  margin-bottom: var(--spacing-sm);
+  line-height: 1.4;
+}
+
+/* Common UI Elements */
+button {
+  appearance: none;
+  background-color: var(--bg-color);
+  color: var(--fg-color);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-family: var(--font-family);
+  font-weight: var(--fw-medium); 
+  font-size: var(--fs-base);
+  cursor: pointer;
+  transition: all 0.05s ease;
+}
+
+button:hover, button.active {
+  background-color: var(--fg-color);
+  color: var(--bg-color);
+}
+
+/* Re-enable text selection ONLY for inputs where the user types */
+input[type="text"],
+input[type="number"],
+textarea {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+input[type="text"],
+input[type="number"],
+select {
+  appearance: none;
+  background-color: var(--bg-color);
+  color: var(--fg-color);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-sm);
+  font-family: var(--font-family);
+  font-weight: var(--fw-medium);
+  font-size: var(--fs-base);
+  width: 100%;
+}
+
+select {
+  cursor: pointer;
+  background-image: linear-gradient(45deg, transparent 50%, var(--fg-color) 50%),
+                    linear-gradient(135deg, var(--fg-color) 50%, transparent 50%);
+  background-position: calc(100% - 12px) calc(1em - 2px),
+                       calc(100% - 7px) calc(1em - 2px);
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+
+/* Custom Range Slider */
+input[type="range"] {
+  appearance: none;
+  width: 100%;
+  background: transparent;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+  width: 100%;
+  height: var(--border-width);
+  background: var(--fg-color);
+  border: none;
+  border-radius: 0;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  border: var(--border-width) solid var(--border-color);
+  height: 16px; 
+  width: 16px;
+  border-radius: var(--border-radius);
+  background: var(--bg-color);
+  cursor: pointer;
+  margin-top: -7px; 
+}
+
+/* Utility layout classes */
+.flex-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.flex-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.panel {
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-md);
+}
+
+/* ==========================================
+   GLOBAL LOADING OVERLAY
+   ========================================== */
+.global-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(250, 250, 250, 0.85); /* Matches --bg-color with transparency */
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-md);
+}
+
+.spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid var(--border-color);
+  border-top-color: var(--fg-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.global-overlay h3 {
+  margin: 0;
+  font-size: var(--fs-lg);
+}
+
+.global-overlay p {
+  color: #666;
+  font-size: var(--fs-sm);
+}
