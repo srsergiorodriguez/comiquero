@@ -43,6 +43,9 @@ jobs:
       - name: Install Dependencies
         run: bun install
 
+      - name: Build Svelte UI
+        run: bun run build 
+
       - name: Build Application
         run: bun run build:stable 
 
@@ -56,12 +59,16 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          .\rcedit.exe "build\stable-win-x64\comiquero\launcher.exe" --set-icon "assets\icon.ico"
-          .\rcedit.exe "build\stable-win-x64\comiquero\bun.exe" --set-icon "assets\icon.ico"
+          $launcher = Get-ChildItem -Path "build\stable-win-x64" -Filter "launcher.exe" -Recurse | Select-Object -First 1 -ExpandProperty FullName
+          $bun = Get-ChildItem -Path "build\stable-win-x64" -Filter "bun.exe" -Recurse | Select-Object -First 1 -ExpandProperty FullName
+          .\rcedit.exe $launcher --set-icon "assets\icon.ico"
+          .\rcedit.exe $bun --set-icon "assets\icon.ico"
 
-      - name: Ad-Hoc Sign macOS Binary
+      - name: Fix Permissions & Sign macOS Binary
         if: runner.os == 'macOS'
-        run: find build -name "*.app" -exec codesign --force --deep -s - {} \;
+        run: |
+          find build -type d -name "*.app" -exec chmod +x {}/Contents/MacOS/* \;
+          find build -type d -name "*.app" -exec codesign --force --deep -s - {} \;
 
       - name: Zip macOS Build
         if: runner.os == 'macOS'
