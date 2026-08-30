@@ -43,9 +43,6 @@ jobs:
       - name: Install Dependencies
         run: bun install
 
-      - name: Build Svelte UI
-        run: bun run build 
-
       - name: Build Application
         run: bun run build:stable 
 
@@ -61,8 +58,8 @@ jobs:
         run: |
           $launcher = Get-ChildItem -Path "build\stable-win-x64" -Filter "launcher.exe" -Recurse | Select-Object -First 1 -ExpandProperty FullName
           $bun = Get-ChildItem -Path "build\stable-win-x64" -Filter "bun.exe" -Recurse | Select-Object -First 1 -ExpandProperty FullName
-          .\rcedit.exe $launcher --set-icon "assets\icon.ico"
-          .\rcedit.exe $bun --set-icon "assets\icon.ico"
+          if ($launcher) { .\rcedit.exe $launcher --set-icon "assets\icon.ico" }
+          if ($bun) { .\rcedit.exe $bun --set-icon "assets\icon.ico" }
 
       - name: Fix Permissions & Sign macOS Binary
         if: runner.os == 'macOS'
@@ -75,15 +72,18 @@ jobs:
         run: |
           if [ -d "build/stable-mac-arm64" ]; then
             cd build/stable-mac-arm64
-            zip -yr comiquero-Mac-Silicon.zip comiquero.app
+            zip -yr comiquero-Mac-Silicon.zip *.app
           elif [ -d "build/stable-mac-x64" ]; then
             cd build/stable-mac-x64
-            zip -yr comiquero-Mac-Intel.zip comiquero.app
+            zip -yr comiquero-Mac-Intel.zip *.app
           fi
 
       - name: Zip Windows Build
         if: runner.os == 'Windows'
-        run: Compress-Archive -Path build\stable-win-x64\comiquero\* -DestinationPath build\comiquero-Windows.zip
+        shell: pwsh
+        run: |
+          $appFolder = Get-ChildItem -Path "build\stable-win-x64" -Directory | Select-Object -First 1 -ExpandProperty FullName
+          Compress-Archive -Path "$appFolder\*" -DestinationPath build\comiquero-Windows.zip
 
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
