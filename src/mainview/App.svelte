@@ -6,13 +6,15 @@
   import SpotMapper from './components/SpotMapper.svelte';
   import ExportPanel from './components/ExportPanel.svelte';
   import PreflightPanel from './components/PreflightPanel.svelte'; 
+
+  import logoUrl from './assets/icon.png';
 </script>
 
 <main class="app-container">
   
   <header class="top-bar panel">
     <div class="top-section left">
-      <img src="./assets/icon.png" alt="comiquero logo" class="app-icon" />
+      <img src={logoUrl} alt="comiquero logo" class="app-icon" />
       <h2>comiquero</h2>
     </div>
     

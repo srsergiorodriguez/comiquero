@@ -43,6 +43,9 @@ jobs:
       - name: Install Dependencies
         run: bun install
 
+      - name: Build Svelte UI
+        run: bun run build 
+
       - name: Build Application
         run: bun run build:stable 
 
